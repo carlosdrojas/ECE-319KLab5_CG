@@ -19,10 +19,25 @@
 const char EID1[] = "GOO287"; // replace abc123 with your EIDCDR3585
 const char EID2[] = "CDR3585"; // replace abc123 with your EID
 
+#define C7 9556 // 261.6 Hz
+#define E0 7584 // 329.6 Hz
+#define G0 6378 // 392.0 Hz
+#define A0 5682 // 440.0 Hz
+
 // prototypes to your low-level Lab 5 code
 void Sound_Init(uint32_t period, uint32_t priority);
 void Sound_Start(uint32_t period);
 void Sound_Stop(void);
+void SysTick_Handler(void);
+
+// Sine wave
+const uint8_t SineWave[32] = {
+  16, 19, 22, 24, 27, 28, 30, 31, 31, 31, 30, 
+  28, 27, 24, 22, 19, 16, 13, 10, 8, 5, 4, 
+  2, 1, 1, 1, 2, 4, 5, 8, 10, 13
+};
+
+uint32_t Index = 0;           // Index varies from 0 to 15
 
 // use main1 to determine Lab5 assignment
 void Lab5Grader(int mode);
@@ -96,7 +111,7 @@ int main2b(void){ // main2b
 // TExaSdisplay scope uses TimerG7, ADC0
 // To perform dynamic testing, there can be no breakpoints in your code
 // DACout will be a monotonic ramp with period 32ms,
-int main(void){ // main3
+int main3(void){ // main3
   Clock_Init80MHz(0);
   LaunchPad_Init();
   Grader_Init();   // execute this line before your code
@@ -143,14 +158,14 @@ int main4(void){ // main4
 // TExaSdisplay scope uses TimerG7, ADC0
 // To perform dynamic testing, there can be no breakpoints in your code
 // DACout will be a sine wave with period/frequency depending on which key is pressed
-int main5(void){// main5
+int main(void){// main5
   Clock_Init80MHz(0);
   LaunchPad_Init();
   Lab5Grader(2);   // 1=logic analyzer, 2=Scope, 3=grade
   DAC5_Init();     // DAC initialization
   Sound_Init(1,0); // SysTick initialization, initially off, priority 0
   Key_Init();      // Keyboard initialization
-  Sound_Start(9956); // start one continuous wave
+  Sound_Start(G0); // start one continuous wave
   while(1){
   }
 }
@@ -190,24 +205,39 @@ int main6(void){// main6
 //        priority is 0 (highest) to 3 (lowest)
 void Sound_Init(uint32_t period, uint32_t priority){
   // write this
+  SysTick->CTRL = 0;         // disable SysTick during setup
+  SysTick->LOAD = period-1;  // reload value
+  SCB->SHP[1] = SCB->SHP[1]&(~0xC0000000)|0x40000000; // set priority = 1
+  SysTick->VAL = 0;          // any write to current clears it
+  SysTick->CTRL = 0x07;    // enable SysTick with core clock and interrupts
+  Index = 0;
 }
 void Sound_Stop(void){
   // either set LOAD to 0 or clear bit 1 in CTRL
+  SysTick->LOAD = 0;  // reload value
   
 }
 
 
 void Sound_Start(uint32_t period){
-    // set reload value
-    // write any value to VAL, cause reload
-    // write this
+  // set reload value
+  // write any value to VAL, cause reload
+  // write this
+  SysTick->LOAD = period-1;  // load reload value
+  //SysTick_Handler();
+  SysTick->VAL = 0; // set VAL to 0 to reset counter
+
+
 }
 
 // Interrupt service routine
 // Executed every 12.5ns*(period)
 void SysTick_Handler(void){
-    // write this
-    // output one value to DAC
+  // write this
+  // output one value to DAC
+  DAC5_Out(SineWave[Index]);
+  Index = (Index+1)&0x1F; 
+  
 }
 
 
