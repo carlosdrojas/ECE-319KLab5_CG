@@ -165,7 +165,10 @@ int main5(void){// main5
   DAC5_Init();     // DAC initialization
   Sound_Init(1,0); // SysTick initialization, initially off, priority 0
   Key_Init();      // Keyboard initialization
-  Sound_Start(G0); // start one continuous wave
+  //UART_Init();
+  //UART_OutUDec(SysTick->LOAD); // debug
+  Sound_Start(C7); // start one continuous wave
+  //UART_OutUDec(SysTick->LOAD); // debug
   while(1){
   }
 }
@@ -180,7 +183,7 @@ int main(void){// main6
   Clock_Init80MHz(0);
   LaunchPad_Init();
   Grader_Init();   // execute this line before your code
-  Lab5Grader(3);   // 1=logic analyzer, 2=Scope, 3=grade
+  Lab5Grader(2);   // 1=logic analyzer, 2=Scope, 3=grade
   DAC5_Init();     // DAC initialization
   Sound_Init(1,0); // SysTick initialization, initially off, priority 0
   Key_Init();      // Keyboard initialization
@@ -202,6 +205,7 @@ int main(void){// main6
   
   if (key == 1) {
     Sound_Start(C7);
+    //UART_OutString("C7"); //debug
   } else if (key == 2) { 
     Sound_Start(E0);
   } else if (key == 4) {
@@ -227,12 +231,13 @@ int main(void){// main6
 //        priority is 0 (highest) to 3 (lowest)
 void Sound_Init(uint32_t period, uint32_t priority){
   // write this
+  Index = 0;
   SysTick->CTRL = 0;         // disable SysTick during setup
   SysTick->LOAD = period-1;  // reload value
   SCB->SHP[1] = SCB->SHP[1]&(~0xC0000000)|0x40000000; // set priority = 1
   SysTick->VAL = 0;          // any write to current clears it
   SysTick->CTRL = 0x07;    // enable SysTick with core clock and interrupts
-  Index = 0;
+  
 }
 void Sound_Stop(void){
   // either set LOAD to 0 or clear bit 1 in CTRL
@@ -258,7 +263,9 @@ void SysTick_Handler(void){
   // write this
   // output one value to DAC
   DAC5_Out(SineWave[Index]);
-  Index = (Index+1)&0x1F; 
+  Index = (Index+1)&0x1F;
+  //UART_OutUDec(Index); // debug
+ 
   
 }
 
