@@ -27,7 +27,7 @@ void Sound_Stop(void);
 // use main1 to determine Lab5 assignment
 void Lab5Grader(int mode);
 void Grader_Init(void);
-int main(void){ // main1
+int main1(void){ // main1
   Clock_Init80MHz(0);
   LaunchPad_Init();
   Lab5Grader(0); // print assignment, no grading
@@ -96,7 +96,7 @@ int main2b(void){ // main2b
 // TExaSdisplay scope uses TimerG7, ADC0
 // To perform dynamic testing, there can be no breakpoints in your code
 // DACout will be a monotonic ramp with period 32ms,
-int main3(void){ // main3
+int main(void){ // main3
   Clock_Init80MHz(0);
   LaunchPad_Init();
   Grader_Init();   // execute this line before your code
