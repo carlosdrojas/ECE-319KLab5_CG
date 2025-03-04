@@ -158,7 +158,7 @@ int main4(void){ // main4
 // TExaSdisplay scope uses TimerG7, ADC0
 // To perform dynamic testing, there can be no breakpoints in your code
 // DACout will be a sine wave with period/frequency depending on which key is pressed
-int main(void){// main5
+int main5(void){// main5
   Clock_Init80MHz(0);
   LaunchPad_Init();
   Lab5Grader(2);   // 1=logic analyzer, 2=Scope, 3=grade
@@ -176,15 +176,16 @@ uint32_t last,key;
 // TExaSdisplay scope uses TimerG7, ADC0
 // To perform dynamic testing, there can be no breakpoints in your code
 // DACout will be a sine wave with period/frequency depending on which key is pressed
-int main6(void){// main6
+int main(void){// main6
   Clock_Init80MHz(0);
   LaunchPad_Init();
   Grader_Init();   // execute this line before your code
-  Lab5Grader(2);   // 1=logic analyzer, 2=Scope, 3=grade
+  Lab5Grader(3);   // 1=logic analyzer, 2=Scope, 3=grade
   DAC5_Init();     // DAC initialization
   Sound_Init(1,0); // SysTick initialization, initially off, priority 0
   Key_Init();      // Keyboard initialization
   Debug_Init();    // Lab 3 debugging
+  last = 0;
   while(1){
 // if key goes from not pressed to pressed
 //   -call Sound_Start with the appropriate period
@@ -192,8 +193,29 @@ int main6(void){// main6
 // if key goes from pressed to not pressed
 //   -call Sound_Stop
 // I.e., if key has not changed DO NOT CALL start or stop
+  key = Key_In();
+  //last = key;
+
+  if (last == key) { 
+    continue;
+  }
+  
+  if (key == 1) {
+    Sound_Start(C7);
+  } else if (key == 2) { 
+    Sound_Start(E0);
+  } else if (key == 4) {
+    Sound_Start(G0);
+  } else if (key == 8) {
+    Sound_Start(A0);
+  } else {
+    Sound_Stop();
+  }
+
+  last = key;
+  
  
-    Clock_Delay(800000); // 10ms, to debounce switch
+  Clock_Delay(800000); // 10ms, to debounce switch
   }
 }
 // To grade you must connect PB20 to your DACout
