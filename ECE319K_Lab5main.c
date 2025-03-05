@@ -29,6 +29,7 @@ void Sound_Init(uint32_t period, uint32_t priority);
 void Sound_Start(uint32_t period);
 void Sound_Stop(void);
 void SysTick_Handler(void);
+void Switch_Waveform(void);
 
 // Sine wave
 const uint8_t SineWave[32] = {
@@ -1047,6 +1048,13 @@ const uint8_t slimeball[7570] = {
     15, 16, 16, 16, 16, 15, 15, 15, 15, 16
 };
 
+const uint8_t *CurrentSineWave = SineWave;  // Default sine wave
+uint32_t CurrentWaveSize = 32;       // Default size
+
+// Lookup arrays to store different sine waves and their sizes
+const uint8_t *WaveTable[] = { SineWave, fastinvader2, explosion, flaunch, slimeball };
+const uint32_t WaveSize[] = { 32, 1042, 8731, 6204, 7570 };
+
 
 
 uint32_t Index = 0;           // Index varies from 0 to 15
@@ -1195,7 +1203,7 @@ int main(void){// main6
   Clock_Init80MHz(0);
   LaunchPad_Init();
   Grader_Init();   // execute this line before your code
-  Lab5Grader(2);   // 1=logic analyzer, 2=Scope, 3=grade
+  Lab5Grader(3);   // 1=logic analyzer, 2=Scope, 3=grade
   DAC5_Init();     // DAC initialization
   Sound_Init(1,0); // SysTick initialization, initially off, priority 0
   Key_Init();      // Keyboard initialization
@@ -1224,6 +1232,8 @@ int main(void){// main6
     Sound_Start(G0);
   } else if (key == 8) {
     Sound_Start(A0);
+  } else if (key == 16) {
+    Switch_Waveform();
   } else {
     Sound_Stop();
   }
@@ -1274,12 +1284,24 @@ void Sound_Start(uint32_t period){
 void SysTick_Handler(void){
   // write this
   // output one value to DAC
-  DAC5_Out(SineWave[Index]);
-  Index = (Index+1)&0x1F;
-  //UART_OutUDec(Index); // debug
- 
+  // DAC5_Out(SineWave[Index]);
+  // Index = (Index+1)&0x1F;
   
+  DAC5_Out(CurrentSineWave[Index]);  // Use the selected sine wave
+  Index = (Index + 1) % CurrentWaveSize;  // Loop correctly for each table size
+ 
 }
+
+uint8_t waveformIndex = 0;
+
+void Switch_Waveform(void) {
+    waveformIndex = (waveformIndex + 1) % 5;  // Cycle through 5 waveforms
+
+    CurrentSineWave = WaveTable[waveformIndex];  // Update waveform
+    CurrentWaveSize = WaveSize[waveformIndex];   // Update size
+    Index = 0;  // Reset index to prevent errors
+}
+
 
 
 
